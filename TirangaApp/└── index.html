@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tiranga Pro One Page</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{margin:0;font-family:Arial;background:#f2f2f2}
+.header{
+  background:linear-gradient(orange,white,green);
+  padding:15px;text-align:center;font-size:20px;font-weight:bold
+}
+.card{
+  background:#fff;margin:10px;padding:15px;
+  border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.1)
+}
+.btn{
+  width:100%;padding:12px;border:none;border-radius:8px;
+  background:#28a745;color:#fff;font-size:16px;margin-bottom:10px;
+}
+.result{text-align:center;font-size:24px;font-weight:bold;margin-top:10px}
+.big{color:green}.small{color:red}
+.history span{
+  display:inline-block;padding:6px 10px;margin:3px;
+  border-radius:6px;color:#fff;font-size:13px
+}
+.bigBox{background:green}.smallBox{background:red}
+input{
+  width:100%;padding:10px;margin-bottom:10px;
+  border-radius:6px;border:1px solid #ccc
+}
+.note{text-align:center;font-size:12px;color:#777}
+</style>
+</head>
+
+<body>
+
+<div class="header">🇮🇳 TIRANGA PRO ONE PAGE 🇮🇳</div>
+
+<!-- Smart Prediction -->
+<div class="card">
+<h3>🎯 Smart Prediction</h3>
+<button class="btn" onclick="smartPredict()">Check Prediction</button>
+<div id="prediction" class="result">---</div>
+<div id="streak" class="result" style="font-size:18px;color:#555;">Streak: 0</div>
+</div>
+
+<!-- Admin Input -->
+<div class="card">
+<h3>🔐 Admin Result Input</h3>
+<input type="number" id="adminNum" placeholder="Enter Result (0-9)">
+<button class="btn" onclick="addResult()">Add Result</button>
+</div>
+
+<!-- History -->
+<div class="card">
+<h3>📜 Last 20 Results</h3>
+<div id="history" class="history"></div>
+</div>
+
+<!-- Chart -->
+<div class="card">
+<h3>📊 Big / Small Ratio</h3>
+<canvas id="chart"></canvas>
+</div>
+
+<p class="note">⚠️ Demo only | No real betting guarantee</p>
+
+<script>
+let historyData=[], lastType="", streakCount=0;
+
+// Determine BIG/SMALL
+function typeOf(n){return n>=5?"BIG":"SMALL";}
+
+// Admin adds result
+function addResult(){
+  let n=document.getElementById("adminNum").value;
+  if(n===""||n<0||n>9) return alert("Enter 0-9");
+  updateHistory(typeOf(Number(n)));
+  document.getElementById("adminNum").value="";
+}
+
+// Update history and streak
+function updateHistory(type){
+  if(type===lastType) streakCount++; else streakCount=1;
+  lastType=type;
+  historyData.unshift(type);
+  if(historyData.length>20) historyData.pop();
+  renderHistory();
+  renderChart();
+  renderStreak();
+}
+
+// Render history
+function renderHistory(){
+  let h=document.getElementById("history");
+  h.innerHTML="";
+  historyData.forEach(r=>{
+    let s=document.createElement("span");
+    s.innerText=r;
+    s.className=r==="BIG"?"bigBox":"smallBox";
+    h.appendChild(s);
+  });
+}
+
+// Render streak
+function renderStreak(){
+  document.getElementById("streak").innerHTML="Streak: "+streakCount+" ("+lastType+")";
+}
+
+// Render chart
+function renderChart(){
+  let big=historyData.filter(x=>x==="BIG").length;
+  let small=historyData.filter(x=>x==="SMALL").length;
+  if(window.myChart) window.myChart.destroy();
+  window.myChart=new Chart(document.getElementById("chart"),{
+    type:'doughnut',
+    data:{
+      labels:['BIG','SMALL'],
+      datasets:[{data:[big,small],backgroundColor:['green','red']}]}
+  });
+}
+
+// Smart prediction based on last 5 results
+function smartPredict(){
+  if(historyData.length<3){
+    showPrediction(Math.random()<0.5?"BIG":"SMALL");
+    return;
+  }
+  let last5=historyData.slice(0,5);
+  let big=last5.filter(x=>x==="BIG").length;
+  let small=last5.filter(x=>x==="SMALL").length;
+  let predict;
+  if(big>small) predict="SMALL";
+  else if(small>big) predict="BIG";
+  else predict= last5[0]==="BIG"?"SMALL":"BIG";
+  showPrediction(predict);
+}
+
+// Show prediction
+function showPrediction(type){
+  let p=document.getElementById("prediction");
+  p.innerHTML=type;
+  p.className="result "+(type==="BIG"?"big":"small");
+}
+</script>
+
+</body>
+</html>
